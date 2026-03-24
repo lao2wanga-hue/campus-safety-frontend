@@ -1,7 +1,7 @@
 <template>
   <div class="sidebar-container">
     <div class="logo">
-      <el-icon><Shield /></el-icon>
+      <el-icon><Lock /></el-icon>
       <span>安全管理系统</span>
     </div>
     <el-menu

@@ -3,7 +3,7 @@
     <!-- 侧边栏 -->
     <el-aside width="200px" class="sidebar">
       <div class="logo">
-        <el-icon :size="24"><Shield /></el-icon>
+        <el-icon :size="24"><Lock /></el-icon>
         <span>安全隐患管理</span>
       </div>
       <el-menu
@@ -64,9 +64,9 @@
 import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useUserStore } from '@/store/modules/user'
-import { ElMessageBox } from 'element-plus'
+import { ElMessageBox, localeContextKey } from 'element-plus'
 import { 
-  Shield, 
+  Lock, 
   DataAnalysis, 
   List, 
   CirclePlus, 
