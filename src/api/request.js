@@ -4,7 +4,7 @@ import router from '@/router'
 import { useUserStore } from '@/store/modules/user'
 
 const request = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api',
+  baseURL: import.meta.env.VITE_API_BASE_URL || 'https://campus-safety-backend-production.up.railway.app/api',
   timeout: 10000
 })
 
