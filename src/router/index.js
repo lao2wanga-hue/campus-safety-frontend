@@ -9,6 +9,12 @@ const routes = [
     meta: { title: '登录' }
   },
   {
+    path: '/register',  // ⭐ 新增注册路由
+    name: 'Register',
+    component: () => import('@/views/Register.vue'),
+    meta: { title: '注册' }
+  },
+  {
     path: '/',
     component: () => import('@/layout/MainLayout.vue'),
     redirect: '/dashboard',
@@ -47,12 +53,12 @@ const routes = [
   },
   {
     path: '/:pathMatch(.*)*',
-    redirect: '/dashboard'
+    redirect: '/login'  // ⭐ 未登录重定向到登录页
   }
 ]
 
 const router = createRouter({
-  history: createWebHashHistory(), // 使用 Hash 模式适配 GitHub Pages
+  history: createWebHashHistory(),
   routes
 })
 
@@ -62,16 +68,23 @@ router.beforeEach((to, from, next) => {
   const userStore = useUserStore()
   const token = userStore.token
   
-  if (to.path !== '/login' && !token) {
+  // 注册和登录页面不需要 token
+  if (to.path === '/login' || to.path === '/register') {
+    if (token) {
+      next('/dashboard')
+      return
+    }
+    next()
+    return
+  }
+  
+  // 其他页面需要 token
+  if (!token) {
     next('/login')
     return
   }
   
-  if (to.path === '/login' && token) {
-    next('/dashboard')
-    return
-  }
-  
+  // 权限检查
   if (to.meta.roles && to.meta.roles.length > 0) {
     if (!to.meta.roles.includes(userStore.role)) {
       next('/dashboard')
