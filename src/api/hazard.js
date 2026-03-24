@@ -1,54 +1,76 @@
 import request from './request'
 
-export function getHazardList(params) {
+export function getHazardList(status, level) {
   return request({
     url: '/hazard/list',
     method: 'get',
-    params
+    params: { status, level }
   })
 }
 
-export function getHazardDetail(id) {
+export function getHazardById(id) {
   return request({
-    url: `/hazard/detail/${id}`,
+    url: `/hazard/${id}`,
     method: 'get'
   })
 }
 
-export function reportHazard(data) {
+export function createHazard(data) {
   return request({
-    url: '/hazard/report',
+    url: '/hazard',
     method: 'post',
     data
   })
 }
 
-export function assignHazard(data) {
+export function updateHazard(id, data) {
   return request({
-    url: '/hazard/assign',
-    method: 'post',
+    url: `/hazard/${id}`,
+    method: 'put',
     data
   })
 }
 
-export function updateStatus(data) {
+export function assignHazard(id, handlerId) {
   return request({
-    url: '/hazard/status',
+    url: `/hazard/${id}/assign`,
     method: 'post',
-    data
+    params: { handlerId }
+  })
+}
+
+export function resolveHazard(id, resolution) {
+  return request({
+    url: `/hazard/${id}/resolve`,
+    method: 'post',
+    params: { resolution }
+  })
+}
+
+export function closeHazard(id) {
+  return request({
+    url: `/hazard/${id}/close`,
+    method: 'post'
   })
 }
 
 export function getStatistics() {
   return request({
-    url: '/hazard/stats',
+    url: '/hazard/statistics',
     method: 'get'
   })
 }
 
-export function deleteHazard(id) {
+export function getMyReports() {
   return request({
-    url: `/hazard/${id}`,
-    method: 'delete'
+    url: '/hazard/my-reports',
+    method: 'get'
+  })
+}
+
+export function getMyTasks() {
+  return request({
+    url: '/hazard/my-tasks',
+    method: 'get'
   })
 }

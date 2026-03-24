@@ -1,5 +1,4 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
-import { useUserStore } from '@/store/modules/user'
 
 const routes = [
   {
@@ -9,14 +8,14 @@ const routes = [
     meta: { title: '登录' }
   },
   {
-    path: '/register',  // ⭐ 新增注册路由
+    path: '/register',
     name: 'Register',
     component: () => import('@/views/Register.vue'),
     meta: { title: '注册' }
   },
   {
     path: '/',
-    component: () => import('@/layout/MainLayout.vue'),
+    component: () => import('@/views/MainLayout.vue'),
     redirect: '/dashboard',
     children: [
       {
@@ -50,10 +49,6 @@ const routes = [
         meta: { title: '用户管理', icon: 'User', roles: ['ADMIN'] }
       }
     ]
-  },
-  {
-    path: '/:pathMatch(.*)*',
-    redirect: '/login'  // ⭐ 未登录重定向到登录页
   }
 ]
 
@@ -64,29 +59,17 @@ const router = createRouter({
 
 router.beforeEach((to, from, next) => {
   document.title = `${to.meta.title || '首页'} - 校园安全隐患管理系统`
+  const token = localStorage.getItem('token')
+  const roles = to.meta.roles
   
-  const userStore = useUserStore()
-  const token = userStore.token
-  
-  // 注册和登录页面不需要 token
-  if (to.path === '/login' || to.path === '/register') {
-    if (token) {
-      next('/dashboard')
-      return
-    }
-    next()
-    return
-  }
-  
-  // 其他页面需要 token
-  if (!token) {
+  if (to.path !== '/login' && !token) {
     next('/login')
     return
   }
   
-  // 权限检查
-  if (to.meta.roles && to.meta.roles.length > 0) {
-    if (!to.meta.roles.includes(userStore.role)) {
+  if (roles && token) {
+    const userRole = localStorage.getItem('role')
+    if (!roles.includes(userRole)) {
       next('/dashboard')
       return
     }
