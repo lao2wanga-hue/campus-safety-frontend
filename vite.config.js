@@ -9,20 +9,18 @@ export default defineConfig({
       '@': resolve(__dirname, 'src')
     }
   },
-  // GitHub Pages 部署必须配置 base（与仓库名一致）
   base: '/campus-safety-frontend/',
   build: {
     outDir: 'dist',
     assetsDir: 'static',
     sourcemap: false,
     minify: 'esbuild',
+    // ⭐ 强制更改文件名（添加时间戳）
     rollupOptions: {
       output: {
-        manualChunks: {
-          'vue-vendor': ['vue', 'vue-router', 'pinia'],
-          'element-plus': ['element-plus', '@element-plus/icons-vue'],
-          'axios': ['axios']
-        }
+        entryFileNames: `static/[name]-[hash]-v3.js`,
+        chunkFileNames: `static/[name]-[hash]-v3.js`,
+        assetFileNames: `static/[name]-[hash]-v3.[ext]`
       }
     },
     chunkSizeWarningLimit: 2000
