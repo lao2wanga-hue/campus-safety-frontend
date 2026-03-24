@@ -41,7 +41,6 @@
         </el-form-item>
       </el-form>
       
-      <!-- ⭐ 新增注册链接 -->
       <div class="register-link">
         没有账号？
         <router-link to="/register">立即注册</router-link>
@@ -55,9 +54,51 @@
 </template>
 
 <script setup>
-import { Lock } from '@element-plus/icons-vue';
+import { reactive, ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { useUserStore } from '@/store/modules/user'
+import { ElMessage } from 'element-plus'
+import { User, Lock } from '@element-plus/icons-vue'
 
-// ... 原有代码保持不变
+const router = useRouter()
+const userStore = useUserStore()
+const loginFormRef = ref(null)
+const loading = ref(false)
+
+// ⭐ 确保 loginForm 正确初始化
+const loginForm = reactive({
+  username: '',
+  password: ''
+})
+
+const rules = {
+  username: [
+    { required: true, message: '请输入用户名', trigger: 'blur' }
+  ],
+  password: [
+    { required: true, message: '请输入密码', trigger: 'blur' },
+    { min: 6, message: '密码长度至少 6 位', trigger: 'blur' }
+  ]
+}
+
+const handleLogin = async () => {
+  if (!loginFormRef.value) return
+  
+  await loginFormRef.value.validate(async (valid) => {
+    if (valid) {
+      loading.value = true
+      try {
+        await userStore.login(loginForm)
+        ElMessage.success('登录成功')
+        router.push('/dashboard')
+      } catch (error) {
+        console.error(error)
+      } finally {
+        loading.value = false
+      }
+    }
+  })
+}
 </script>
 
 <style scoped>
@@ -88,7 +129,6 @@ import { Lock } from '@element-plus/icons-vue';
   margin-top: 20px;
 }
 
-/* ⭐ 新增注册链接样式 */
 .register-link {
   text-align: center;
   color: #909399;
