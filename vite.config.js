@@ -9,7 +9,7 @@ export default defineConfig({
       '@': resolve(__dirname, 'src')
     }
   },
-  // GitHub Pages 部署需要配置 base
+  // GitHub Pages 部署必须配置 base（与仓库名一致）
   base: '/campus-safety-frontend/',
   build: {
     outDir: 'dist',
@@ -33,8 +33,7 @@ export default defineConfig({
     proxy: {
       '/api': {
         target: 'http://localhost:8080',
-        changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api/, '/api')
+        changeOrigin: true
       }
     }
   }
