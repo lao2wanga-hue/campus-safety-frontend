@@ -2,7 +2,7 @@
   <div class="register-container">
     <el-card class="register-card">
       <div class="register-header">
-        <el-icon :size="40" color="#409EFF"><Shield /></el-icon>
+        <el-icon :size="40" color="#409EFF"><Lock /></el-icon>
         <h2>校园安全隐患管理系统</h2>
         <p class="subtitle">用户注册</p>
       </div>
@@ -84,7 +84,7 @@ import { reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { register } from '@/api/user'
 import { ElMessage } from 'element-plus'
-import { UserFilled, Shield } from '@element-plus/icons-vue'
+import { UserFilled, Lock } from '@element-plus/icons-vue'
 
 const router = useRouter()
 const registerFormRef = ref(null)

@@ -2,7 +2,7 @@
   <div class="login-container">
     <el-card class="login-card">
       <div class="login-header">
-        <el-icon :size="40" color="#409EFF"><Shield /></el-icon>
+        <el-icon :size="40" color="#409EFF"><Lock /></el-icon>
         <h2>校园安全隐患管理系统</h2>
       </div>
       <el-form
@@ -55,6 +55,8 @@
 </template>
 
 <script setup>
+import { Lock } from '@element-plus/icons-vue';
+
 // ... 原有代码保持不变
 </script>
 
