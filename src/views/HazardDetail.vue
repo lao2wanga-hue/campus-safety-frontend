@@ -2,97 +2,88 @@
   <div class="hazard-detail">
     <el-card>
       <template #header>
-        <div class="card-header">
-          <span>隐患详情</span>
-          <el-button @click="goBack">返回</el-button>
-        </div>
+        <span>隐患详情</span>
       </template>
-
-      <el-descriptions title="基本信息" :column="2" border>
-        <el-descriptions-item label="ID">{{ detail.id }}</el-descriptions-item>
+      
+      <el-descriptions :column="2" border>
+        <el-descriptions-item label="ID">{{ hazard.id }}</el-descriptions-item>
         <el-descriptions-item label="状态">
-          <el-tag :type="getStatusType(detail.status)">{{ detail.status }}</el-tag>
+          <el-tag :type="getStatusType(hazard.status)">{{ getStatusText(hazard.status) }}</el-tag>
         </el-descriptions-item>
-        <el-descriptions-item label="标题">{{ detail.title }}</el-descriptions-item>
+        <el-descriptions-item label="标题">{{ hazard.title }}</el-descriptions-item>
         <el-descriptions-item label="等级">
-          <el-tag :type="getLevelType(detail.level)">{{ detail.level }}</el-tag>
+          <el-tag :type="getLevelType(hazard.level)">{{ getLevelText(hazard.level) }}</el-tag>
         </el-descriptions-item>
-        <el-descriptions-item label="地点">{{ detail.location }}</el-descriptions-item>
-        <el-descriptions-item label="上报人">{{ detail.reporterName }}</el-descriptions-item>
-        <el-descriptions-item label="整改人">{{ detail.rectifierName }}</el-descriptions-item>
-        <el-descriptions-item label="上报时间">{{ detail.createTime }}</el-descriptions-item>
+        <el-descriptions-item label="位置">{{ hazard.location }}</el-descriptions-item>
+        <el-descriptions-item label="上报人">{{ hazard.reporterName }}</el-descriptions-item>
+        <el-descriptions-item label="上报时间">{{ hazard.createdAt }}</el-descriptions-item>
+        <el-descriptions-item label="处理人">{{ hazard.handlerName || '未分配' }}</el-descriptions-item>
+        <el-descriptions-item label="描述" :span="2">{{ hazard.description }}</el-descriptions-item>
+        <el-descriptions-item label="解决方案" :span="2">{{ hazard.resolution || '暂无' }}</el-descriptions-item>
       </el-descriptions>
-
-      <el-divider>隐患描述</el-divider>
-      <p>{{ detail.description || '无描述' }}</p>
-
-      <el-divider>整改日志</el-divider>
-      <el-timeline>
-        <el-timeline-item
-          v-for="log in detail.logs"
-          :key="log.id"
-          :timestamp="log.createTime"
-          placement="top"
+      
+      <div class="actions" style="margin-top: 20px;">
+        <el-button @click="$router.back()">返回</el-button>
+        <el-button 
+          v-if="userStore.role === 'ADMIN' || userStore.role === 'RECTIFIER'" 
+          type="primary"
+          @click="showProcessDialog = true"
         >
-          <el-card>
-            <h4>{{ log.userName }} - {{ log.actionType }}</h4>
-            <p>{{ log.content }}</p>
-          </el-card>
-        </el-timeline-item>
-      </el-timeline>
+          处理
+        </el-button>
+      </div>
     </el-card>
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import { getHazardDetail } from '@/api/hazard'
+import { useRoute } from 'vue-router'
+import { useUserStore } from '@/store/modules/user'
+import { getHazardById } from '@/api/hazard'
 
 const route = useRoute()
-const router = useRouter()
-const detail = ref({ logs: [] })
-
-const loadData = async () => {
-  try {
-    const res = await getHazardDetail(route.params.id)
-    detail.value = res.data
-  } catch (error) {
-    console.error(error)
-  }
-}
+const userStore = useUserStore()
+const hazard = ref({})
+const showProcessDialog = ref(false)
 
 const getLevelType = (level) => {
-  const map = { NORMAL: 'info', HIGH: 'warning', URGENT: 'danger' }
+  const map = { LOW: 'info', MEDIUM: 'warning', HIGH: 'danger', CRITICAL: 'danger' }
   return map[level] || 'info'
 }
 
+const getLevelText = (level) => {
+  const map = { LOW: '低', MEDIUM: '中', HIGH: '高', CRITICAL: '紧急' }
+  return map[level] || level
+}
+
 const getStatusType = (status) => {
-  const map = { 
-    PENDING: 'warning', 
-    ASSIGNED: 'primary', 
-    RECTIFYING: 'success', 
-    COMPLETED: 'success', 
-    REJECTED: 'info' 
-  }
+  const map = { PENDING: 'warning', PROCESSING: 'primary', RESOLVED: 'success', CLOSED: 'info' }
   return map[status] || 'info'
 }
 
-const goBack = () => {
-  router.back()
+const getStatusText = (status) => {
+  const map = { PENDING: '待处理', PROCESSING: '处理中', RESOLVED: '已解决', CLOSED: '已关闭' }
+  return map[status] || status
 }
 
-onMounted(loadData)
+const loadDetail = async () => {
+  const res = await getHazardById(route.params.id)
+  hazard.value = res.data
+}
+
+onMounted(() => {
+  loadDetail()
+})
 </script>
 
 <style scoped>
 .hazard-detail {
-  padding: 10px;
+  max-width: 1000px;
+  margin: 0 auto;
 }
 
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+.actions {
+  text-align: right;
 }
 </style>

@@ -2,45 +2,35 @@
   <div class="hazard-report">
     <el-card>
       <template #header>
-        <div class="card-header">
-          <span>上报隐患</span>
-          <el-button @click="goBack">返回</el-button>
-        </div>
+        <span>上报隐患</span>
       </template>
-
-      <el-form
-        ref="formRef"
-        :model="form"
-        :rules="rules"
-        label-width="100px"
-        style="max-width: 600px"
-      >
+      
+      <el-form :model="form" :rules="rules" ref="formRef" label-width="100px">
         <el-form-item label="标题" prop="title">
           <el-input v-model="form.title" placeholder="请输入隐患标题" />
         </el-form-item>
-        <el-form-item label="地点" prop="location">
-          <el-input v-model="form.location" placeholder="请输入隐患地点" />
+        <el-form-item label="描述" prop="description">
+          <el-input 
+            v-model="form.description" 
+            type="textarea" 
+            :rows="4"
+            placeholder="请详细描述隐患情况" 
+          />
+        </el-form-item>
+        <el-form-item label="位置" prop="location">
+          <el-input v-model="form.location" placeholder="请输入隐患位置" />
         </el-form-item>
         <el-form-item label="等级" prop="level">
           <el-select v-model="form.level" placeholder="请选择等级">
-            <el-option label="普通" value="NORMAL" />
+            <el-option label="低" value="LOW" />
+            <el-option label="中" value="MEDIUM" />
             <el-option label="高" value="HIGH" />
-            <el-option label="紧急" value="URGENT" />
+            <el-option label="紧急" value="CRITICAL" />
           </el-select>
         </el-form-item>
-        <el-form-item label="描述" prop="description">
-          <el-input
-            v-model="form.description"
-            type="textarea"
-            :rows="5"
-            placeholder="请详细描述隐患情况"
-          />
-        </el-form-item>
         <el-form-item>
-          <el-button type="primary" :loading="loading" @click="handleSubmit">
-            提交上报
-          </el-button>
-          <el-button @click="resetForm">重置</el-button>
+          <el-button type="primary" @click="submit" :loading="loading">提交</el-button>
+          <el-button @click="reset">重置</el-button>
         </el-form-item>
       </el-form>
     </el-card>
@@ -48,10 +38,10 @@
 </template>
 
 <script setup>
-import { reactive, ref } from 'vue'
+import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
-import { reportHazard } from '@/api/hazard'
 import { ElMessage } from 'element-plus'
+import { createHazard } from '@/api/hazard'
 
 const router = useRouter()
 const formRef = ref(null)
@@ -59,55 +49,38 @@ const loading = ref(false)
 
 const form = reactive({
   title: '',
+  description: '',
   location: '',
-  level: 'NORMAL',
-  description: ''
+  level: 'MEDIUM'
 })
 
 const rules = {
   title: [{ required: true, message: '请输入标题', trigger: 'blur' }],
-  location: [{ required: true, message: '请输入地点', trigger: 'blur' }],
+  description: [{ required: true, message: '请输入描述', trigger: 'blur' }],
+  location: [{ required: true, message: '请输入位置', trigger: 'blur' }],
   level: [{ required: true, message: '请选择等级', trigger: 'change' }]
 }
 
-const handleSubmit = async () => {
-  if (!formRef.value) return
-  
-  await formRef.value.validate(async (valid) => {
-    if (valid) {
-      loading.value = true
-      try {
-        await reportHazard(form)
-        ElMessage.success('上报成功')
-        router.push('/hazard/list')
-      } catch (error) {
-        console.error(error)
-      } finally {
-        loading.value = false
-      }
-    }
-  })
-}
-
-const resetForm = () => {
-  if (formRef.value) {
-    formRef.value.resetFields()
+const submit = async () => {
+  await formRef.value.validate()
+  loading.value = true
+  try {
+    await createHazard(form)
+    ElMessage.success('上报成功')
+    router.push('/hazard/list')
+  } finally {
+    loading.value = false
   }
 }
 
-const goBack = () => {
-  router.back()
+const reset = () => {
+  formRef.value.resetFields()
 }
 </script>
 
 <style scoped>
 .hazard-report {
-  padding: 10px;
-}
-
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  max-width: 800px;
+  margin: 0 auto;
 }
 </style>
