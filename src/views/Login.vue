@@ -41,44 +41,36 @@
         </el-form-item>
       </el-form>
       
-      <div class="register-link">
-        没有账号？
-        <router-link to="/register">立即注册</router-link>
-      </div>
-      
       <div class="login-tips">
         <p>测试账号：admin / 123456</p>
+        <p>测试账号：1123 / 123456</p>
       </div>
     </el-card>
   </div>
 </template>
 
 <script setup>
+// ⭐ 必须导入这些
 import { reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/store/modules/user'
 import { ElMessage } from 'element-plus'
 import { User, Lock } from '@element-plus/icons-vue'
 
+// ⭐ 必须初始化 router
 const router = useRouter()
 const userStore = useUserStore()
 const loginFormRef = ref(null)
 const loading = ref(false)
 
-// ⭐ 确保 loginForm 正确初始化
 const loginForm = reactive({
   username: '',
   password: ''
 })
 
 const rules = {
-  username: [
-    { required: true, message: '请输入用户名', trigger: 'blur' }
-  ],
-  password: [
-    { required: true, message: '请输入密码', trigger: 'blur' },
-    { min: 6, message: '密码长度至少 6 位', trigger: 'blur' }
-  ]
+  username: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
+  password: [{ required: true, message: '请输入密码', trigger: 'blur' }]
 }
 
 const handleLogin = async () => {
@@ -90,17 +82,17 @@ const handleLogin = async () => {
       try {
         console.log('=== 开始登录 ===')
         
-        // ⭐ 调用登录
+        // 调用登录
         await userStore.login(loginForm)
         
         console.log('=== 登录成功 ===')
         console.log('token:', localStorage.getItem('token'))
         console.log('role:', localStorage.getItem('role'))
         
-        // ⭐ 显示成功消息
+        // 显示成功消息
         ElMessage.success('登录成功')
         
-        // ⭐ 延迟一下确保存储完成
+        // 延迟一下确保存储完成
         setTimeout(() => {
           console.log('=== 准备跳转 ===')
           router.push('/dashboard')
@@ -146,27 +138,14 @@ const handleLogin = async () => {
   margin-top: 20px;
 }
 
-.register-link {
-  text-align: center;
-  color: #909399;
-  font-size: 14px;
-  margin-top: 10px;
-}
-
-.register-link a {
-  color: #409EFF;
-  text-decoration: none;
-  margin-left: 5px;
-}
-
-.register-link a:hover {
-  text-decoration: underline;
-}
-
 .login-tips {
   text-align: center;
   color: #909399;
   font-size: 12px;
   margin-top: 15px;
+}
+
+.login-tips p {
+  margin: 5px 0;
 }
 </style>
