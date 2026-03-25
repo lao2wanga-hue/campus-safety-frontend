@@ -76,7 +76,7 @@ export function closeHazard(id) {
 }
 
 /**
- * ⭐ 完成修理（前端需要这个导出）
+ * ⭐ 完成修理
  */
 export function completeRepairApi(id) {
   return request({
@@ -86,7 +86,7 @@ export function completeRepairApi(id) {
 }
 
 /**
- * ⭐ 删除隐患（前端需要这个导出）
+ * ⭐ 删除隐患
  */
 export function deleteHazardApi(id) {
   return request({
@@ -96,7 +96,7 @@ export function deleteHazardApi(id) {
 }
 
 /**
- * 获取维修员列表
+ * ⭐ 获取维修员列表（确保有这个函数）
  */
 export function getRectifiers() {
   return request({

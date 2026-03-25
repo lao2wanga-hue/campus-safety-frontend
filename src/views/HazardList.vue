@@ -163,14 +163,15 @@ import { ref, reactive, onMounted } from 'vue'
 import { Plus } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useUserStore } from '@/store/modules/user'
-import { getHazardList, createHazard, assignHazard, completeRepairApi, deleteHazardApi } from '@/api/hazard'
+// ⭐ 确保导入 getRectifiers
+import { getHazardList, createHazard, assignHazard, completeRepairApi, deleteHazardApi, getRectifiers } from '@/api/hazard'
 
 const userStore = useUserStore()
 const loading = ref(false)
 const creating = ref(false)
 const assigning = ref(false)
 const showCreateDialog = ref(false)
-const showAssignDialog = ref(false)  // ⭐ 只声明一次
+const showAssignDialog = ref(false)
 const showDetailDialog = ref(false)
 const createFormRef = ref(null)
 const hazardList = ref([])
@@ -233,13 +234,15 @@ const loadList = async () => {
   }
 }
 
-// 加载维修员列表
+// ⭐ 修复：使用正确的 getRectifiers API
 const loadRectifiers = async () => {
   try {
-    const res = await getHazardList()  // 使用用户列表接口
-    rectifierList.value = (res.data || []).filter(u => u.role === 'RECTIFIER')
+    const res = await getRectifiers()  // ⭐ 使用 getRectifiers 而不是 getHazardList
+    rectifierList.value = res.data || []
+    console.log('维修员列表:', rectifierList.value)  // ⭐ 添加日志方便调试
   } catch (error) {
     console.error('加载维修员失败:', error)
+    ElMessage.error('加载维修员列表失败')
   }
 }
 
@@ -322,6 +325,7 @@ const deleteHazard = async (id) => {
 
 onMounted(() => {
   loadList()
+  // ⭐ 管理员和维修员需要加载维修员列表
   if (userStore.role === 'ADMIN' || userStore.role === 'RECTIFIER') {
     loadRectifiers()
   }
