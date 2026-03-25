@@ -18,9 +18,9 @@ export default defineConfig({
     // ⭐ 强制更改文件名（添加时间戳）
     rollupOptions: {
       output: {
-        entryFileNames: `static/[name]-[hash]-v3.js`,
-        chunkFileNames: `static/[name]-[hash]-v3.js`,
-        assetFileNames: `static/[name]-[hash]-v3.[ext]`
+        entryFileNames: `static/[name]-[hash]-v4.js`,
+        chunkFileNames: `static/[name]-[hash]-v4.js`,
+        assetFileNames: `static/[name]-[hash]-v4.[ext]`
       }
     },
     chunkSizeWarningLimit: 2000

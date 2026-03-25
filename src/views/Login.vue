@@ -3,7 +3,7 @@
     <el-card class="login-card">
       <div class="login-header">
         <el-icon :size="40" color="#409EFF"><Lock /></el-icon>
-        <h2>校园安全隐患管理系统</h2>
+        <h2>校园安全隐患管理系统 V2</h2>
       </div>
       <el-form
         ref="loginFormRef"
@@ -60,6 +60,7 @@ const router = useRouter()
 const userStore = useUserStore()
 const loginFormRef = ref(null)
 const loading = ref(false)
+const version = 'v2-force-rebuild'  // 强制重新编译
 
 const loginForm = reactive({
   username: '',
