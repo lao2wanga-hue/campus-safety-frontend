@@ -1,1 +1,0 @@
-import{a}from"./user-Ds0S_yUS-v5.js";function s(t,r){return a({url:"/hazard/list",method:"get",params:{status:t,level:r}})}function u(t){return a({url:`/hazard/${t}`,method:"get"})}function d(t){return a({url:"/hazard",method:"post",data:t})}function n(){return a({url:"/hazard/statistics",method:"get"})}export{s as a,u as b,d as c,n as g};
