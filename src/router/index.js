@@ -63,6 +63,9 @@ const router = createRouter({
   routes
 })
 
+// ⭐ 允许未登录访问的公开页面
+const publicPages = ['/login', '/register']
+
 router.beforeEach((to, from, next) => {
   console.log('=== 路由守卫 ===')
   console.log('从:', from.path)
@@ -71,12 +74,21 @@ router.beforeEach((to, from, next) => {
   
   const token = localStorage.getItem('token')
   
-  if (to.path !== '/login' && !token) {
+  // ⭐ 如果是公开页面，直接允许访问
+  if (publicPages.includes(to.path)) {
+    console.log('公开页面，允许访问')
+    next()
+    return
+  }
+  
+  // ⭐ 如果不是公开页面且没有 token，跳转到登录
+  if (!token) {
     console.log('无 token，跳转到登录')
     next('/login')
     return
   }
   
+  // ⭐ 如果已登录但访问登录页，跳转到首页
   if (to.path === '/login' && token) {
     console.log('已有 token，跳转到首页')
     next('/dashboard')
