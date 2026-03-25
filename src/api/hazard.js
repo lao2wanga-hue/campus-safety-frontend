@@ -1,5 +1,8 @@
 import request from './request'
 
+/**
+ * 获取隐患列表
+ */
 export function getHazardList(status, level) {
   return request({
     url: '/hazard/list',
@@ -8,6 +11,9 @@ export function getHazardList(status, level) {
   })
 }
 
+/**
+ * 获取隐患详情
+ */
 export function getHazardById(id) {
   return request({
     url: `/hazard/${id}`,
@@ -15,6 +21,9 @@ export function getHazardById(id) {
   })
 }
 
+/**
+ * 创建隐患
+ */
 export function createHazard(data) {
   return request({
     url: '/hazard',
@@ -23,6 +32,9 @@ export function createHazard(data) {
   })
 }
 
+/**
+ * 更新隐患
+ */
 export function updateHazard(id, data) {
   return request({
     url: `/hazard/${id}`,
@@ -31,6 +43,9 @@ export function updateHazard(id, data) {
   })
 }
 
+/**
+ * 分配隐患
+ */
 export function assignHazard(id, handlerId) {
   return request({
     url: `/hazard/${id}/assign`,
@@ -39,6 +54,9 @@ export function assignHazard(id, handlerId) {
   })
 }
 
+/**
+ * 解决隐患
+ */
 export function resolveHazard(id, resolution) {
   return request({
     url: `/hazard/${id}/resolve`,
@@ -47,6 +65,9 @@ export function resolveHazard(id, resolution) {
   })
 }
 
+/**
+ * 关闭隐患
+ */
 export function closeHazard(id) {
   return request({
     url: `/hazard/${id}/close`,
@@ -54,6 +75,49 @@ export function closeHazard(id) {
   })
 }
 
+/**
+ * ⭐ 完成修理（前端需要这个导出）
+ */
+export function completeRepairApi(id) {
+  return request({
+    url: `/hazard/${id}/complete`,
+    method: 'post'
+  })
+}
+
+/**
+ * ⭐ 删除隐患（前端需要这个导出）
+ */
+export function deleteHazardApi(id) {
+  return request({
+    url: `/hazard/${id}`,
+    method: 'delete'
+  })
+}
+
+/**
+ * 获取维修员列表
+ */
+export function getRectifiers() {
+  return request({
+    url: '/hazard/rectifiers',
+    method: 'get'
+  })
+}
+
+/**
+ * 获取处理中的隐患
+ */
+export function getProcessingHazards() {
+  return request({
+    url: '/hazard/processing',
+    method: 'get'
+  })
+}
+
+/**
+ * 获取统计数据
+ */
 export function getStatistics() {
   return request({
     url: '/hazard/statistics',
@@ -61,6 +125,9 @@ export function getStatistics() {
   })
 }
 
+/**
+ * 获取我的上报
+ */
 export function getMyReports() {
   return request({
     url: '/hazard/my-reports',
@@ -68,6 +135,9 @@ export function getMyReports() {
   })
 }
 
+/**
+ * 获取我的任务
+ */
 export function getMyTasks() {
   return request({
     url: '/hazard/my-tasks',

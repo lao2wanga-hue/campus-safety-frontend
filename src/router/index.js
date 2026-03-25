@@ -43,6 +43,12 @@ const routes = [
         meta: { title: '隐患详情', hidden: true }
       },
       {
+        path: 'hazard/processing',
+        name: 'ProcessingList',
+        component: () => import('@/views/ProcessingList.vue'),
+        meta: { title: '处理中隐患' }
+      },
+      {
         path: 'user/manage',
         name: 'UserManage',
         component: () => import('@/views/UserManage.vue'),

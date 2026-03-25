@@ -4,8 +4,7 @@
       <template #header>
         <div class="card-header">
           <span>隐患列表</span>
-          <el-button type="primary" @click="showCreateDialog = true">
-            <el-icon><Plus /></el-icon>
+          <el-button type="primary" :icon="Plus" @click="showCreateDialog = true">
             上报隐患
           </el-button>
         </div>
@@ -26,7 +25,6 @@
             <el-option label="低" value="LOW" />
             <el-option label="中" value="MEDIUM" />
             <el-option label="高" value="HIGH" />
-            <el-option label="紧急" value="CRITICAL" />
           </el-select>
         </el-form-item>
         <el-form-item>
@@ -35,7 +33,7 @@
       </el-form>
       
       <!-- 表格 -->
-      <el-table :data="hazardList" style="width: 100%">
+      <el-table :data="hazardList" style="width: 100%" v-loading="loading">
         <el-table-column prop="id" label="ID" width="80" />
         <el-table-column prop="title" label="标题" />
         <el-table-column prop="location" label="位置" width="150" />
@@ -50,23 +48,45 @@
           </template>
         </el-table-column>
         <el-table-column prop="reporterName" label="上报人" width="100" />
+        <el-table-column prop="handlerName" label="维修员" width="100">
+          <template #default="{ row }">
+            {{ row.handlerName || '未分配' }}
+          </template>
+        </el-table-column>
         <el-table-column prop="createdAt" label="上报时间" width="180" />
-        <el-table-column label="操作" width="200">
+        <el-table-column label="操作" width="300" fixed="right">
           <template #default="{ row }">
             <el-button size="small" @click="viewDetail(row)">详情</el-button>
-            <el-button 
-              v-if="userStore.role === 'ADMIN' || userStore.role === 'RECTIFIER'" 
-              size="small" 
-              type="primary"
-              @click="handleProcess(row)"
-            >
-              处理
-            </el-button>
+            
+            <!-- 管理员：可以分配、删除 -->
+            <template v-if="userStore.role === 'ADMIN'">
+              <el-button 
+                v-if="row.status === 'PENDING'" 
+                size="small" 
+                type="primary"
+                @click="showAssignDialogFunc(row)"
+              >
+                分配
+              </el-button>
+              <el-button size="small" type="danger" @click="deleteHazard(row.id)">删除</el-button>
+            </template>
+            
+            <!-- 维修员：可以完成修理 -->
+            <template v-else-if="userStore.role === 'RECTIFIER'">
+              <el-button 
+                v-if="row.status === 'PROCESSING' && row.handlerId === userStore.userId" 
+                size="small" 
+                type="success"
+                @click="completeRepair(row)"
+              >
+                完成修理
+              </el-button>
+            </template>
           </template>
         </el-table-column>
       </el-table>
     </el-card>
-    
+
     <!-- 创建隐患对话框 -->
     <el-dialog v-model="showCreateDialog" title="上报隐患" width="600px">
       <el-form :model="createForm" :rules="rules" ref="createFormRef" label-width="100px">
@@ -89,7 +109,6 @@
             <el-option label="低" value="LOW" />
             <el-option label="中" value="MEDIUM" />
             <el-option label="高" value="HIGH" />
-            <el-option label="紧急" value="CRITICAL" />
           </el-select>
         </el-form-item>
       </el-form>
@@ -98,20 +117,66 @@
         <el-button type="primary" @click="submitCreate" :loading="creating">提交</el-button>
       </template>
     </el-dialog>
+    
+    <!-- 分配隐患对话框 -->
+    <el-dialog v-model="showAssignDialog" title="分配隐患" width="500px">
+      <el-form :model="assignForm" label-width="100px">
+        <el-form-item label="维修员" required>
+          <el-select v-model="assignForm.handlerId" placeholder="请选择维修员" style="width: 100%">
+            <el-option 
+              v-for="rectifier in rectifierList" 
+              :key="rectifier.id" 
+              :label="rectifier.realName" 
+              :value="rectifier.id" 
+            />
+          </el-select>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="showAssignDialog = false">取消</el-button>
+        <el-button type="primary" @click="submitAssign" :loading="assigning">分配</el-button>
+      </template>
+    </el-dialog>
+    
+    <!-- 隐患详情对话框 -->
+    <el-dialog v-model="showDetailDialog" title="隐患详情" width="600px">
+      <el-descriptions :column="2" border v-if="currentHazard">
+        <el-descriptions-item label="标题">{{ currentHazard.title }}</el-descriptions-item>
+        <el-descriptions-item label="等级">
+          <el-tag :type="getLevelType(currentHazard.level)">{{ getLevelText(currentHazard.level) }}</el-tag>
+        </el-descriptions-item>
+        <el-descriptions-item label="位置">{{ currentHazard.location }}</el-descriptions-item>
+        <el-descriptions-item label="状态">
+          <el-tag :type="getStatusType(currentHazard.status)">{{ getStatusText(currentHazard.status) }}</el-tag>
+        </el-descriptions-item>
+        <el-descriptions-item label="描述" :span="2">{{ currentHazard.description }}</el-descriptions-item>
+        <el-descriptions-item label="上报人">{{ currentHazard.reporterName }}</el-descriptions-item>
+        <el-descriptions-item label="上报时间">{{ currentHazard.createdAt }}</el-descriptions-item>
+        <el-descriptions-item label="维修员">{{ currentHazard.handlerName || '未分配' }}</el-descriptions-item>
+      </el-descriptions>
+    </el-dialog>
   </div>
 </template>
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { Plus } from '@element-plus/icons-vue'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { useUserStore } from '@/store/modules/user'
-import { getHazardList, createHazard } from '@/api/hazard'
+import { getHazardList, createHazard, assignHazard, completeRepairApi, deleteHazardApi } from '@/api/hazard'
 
 const userStore = useUserStore()
-const showCreateDialog = ref(false)
+const loading = ref(false)
 const creating = ref(false)
+const assigning = ref(false)
+const showCreateDialog = ref(false)
+const showAssignDialog = ref(false)  // ⭐ 只声明一次
+const showDetailDialog = ref(false)
+const createFormRef = ref(null)
 const hazardList = ref([])
+const rectifierList = ref([])
+const currentHazard = ref(null)
+
 const filterForm = reactive({
   status: '',
   level: ''
@@ -124,6 +189,10 @@ const createForm = reactive({
   level: 'MEDIUM'
 })
 
+const assignForm = reactive({
+  handlerId: null
+})
+
 const rules = {
   title: [{ required: true, message: '请输入标题', trigger: 'blur' }],
   description: [{ required: true, message: '请输入描述', trigger: 'blur' }],
@@ -132,12 +201,12 @@ const rules = {
 }
 
 const getLevelType = (level) => {
-  const map = { LOW: 'info', MEDIUM: 'warning', HIGH: 'danger', CRITICAL: 'danger' }
+  const map = { LOW: 'info', MEDIUM: 'warning', HIGH: 'danger' }
   return map[level] || 'info'
 }
 
 const getLevelText = (level) => {
-  const map = { LOW: '低', MEDIUM: '中', HIGH: '高', CRITICAL: '紧急' }
+  const map = { LOW: '低', MEDIUM: '中', HIGH: '高' }
   return map[level] || level
 }
 
@@ -151,11 +220,30 @@ const getStatusText = (status) => {
   return map[status] || status
 }
 
+// 加载隐患列表
 const loadList = async () => {
-  const res = await getHazardList(filterForm.status, filterForm.level)
-  hazardList.value = res.data
+  loading.value = true
+  try {
+    const res = await getHazardList(filterForm.status, filterForm.level)
+    hazardList.value = res.data || []
+  } catch (error) {
+    ElMessage.error('加载失败')
+  } finally {
+    loading.value = false
+  }
 }
 
+// 加载维修员列表
+const loadRectifiers = async () => {
+  try {
+    const res = await getHazardList()  // 使用用户列表接口
+    rectifierList.value = (res.data || []).filter(u => u.role === 'RECTIFIER')
+  } catch (error) {
+    console.error('加载维修员失败:', error)
+  }
+}
+
+// 提交创建
 const submitCreate = async () => {
   await createFormRef.value.validate()
   creating.value = true
@@ -164,25 +252,79 @@ const submitCreate = async () => {
     ElMessage.success('上报成功')
     showCreateDialog.value = false
     loadList()
-    // 重置表单
     Object.assign(createForm, { title: '', description: '', location: '', level: 'MEDIUM' })
+  } catch (error) {
+    ElMessage.error(error.message || '上报失败')
   } finally {
     creating.value = false
   }
 }
 
-const viewDetail = (row) => {
-  // TODO: 跳转到详情页
-  console.log('查看详情', row)
+// 显示分配对话框
+const showAssignDialogFunc = (row) => {
+  currentHazard.value = row
+  assignForm.handlerId = null
+  showAssignDialog.value = true
 }
 
-const handleProcess = (row) => {
-  // TODO: 处理隐患
-  console.log('处理隐患', row)
+// 提交分配
+const submitAssign = async () => {
+  if (!assignForm.handlerId) {
+    ElMessage.warning('请选择维修员')
+    return
+  }
+  assigning.value = true
+  try {
+    await assignHazard(currentHazard.value.id, assignForm.handlerId)
+    ElMessage.success('分配成功')
+    showAssignDialog.value = false
+    loadList()
+  } catch (error) {
+    ElMessage.error(error.message || '分配失败')
+  } finally {
+    assigning.value = false
+  }
+}
+
+// 完成修理
+const completeRepair = async (row) => {
+  try {
+    await ElMessageBox.confirm('确定完成修理？', '提示', { type: 'warning' })
+    await completeRepairApi(row.id)
+    ElMessage.success('修理完成')
+    loadList()
+  } catch (error) {
+    if (error !== 'cancel') {
+      ElMessage.error(error.message || '操作失败')
+    }
+  }
+}
+
+// 查看详情
+const viewDetail = (row) => {
+  currentHazard.value = row
+  showDetailDialog.value = true
+}
+
+// 删除隐患
+const deleteHazard = async (id) => {
+  try {
+    await ElMessageBox.confirm('确定删除该隐患？', '警告', { type: 'danger' })
+    await deleteHazardApi(id)
+    ElMessage.success('删除成功')
+    loadList()
+  } catch (error) {
+    if (error !== 'cancel') {
+      ElMessage.error(error.message || '删除失败')
+    }
+  }
 }
 
 onMounted(() => {
   loadList()
+  if (userStore.role === 'ADMIN' || userStore.role === 'RECTIFIER') {
+    loadRectifiers()
+  }
 })
 </script>
 
