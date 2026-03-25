@@ -88,11 +88,28 @@ const handleLogin = async () => {
     if (valid) {
       loading.value = true
       try {
+        console.log('=== 开始登录 ===')
+        
+        // ⭐ 调用登录
         await userStore.login(loginForm)
+        
+        console.log('=== 登录成功 ===')
+        console.log('token:', localStorage.getItem('token'))
+        console.log('role:', localStorage.getItem('role'))
+        
+        // ⭐ 显示成功消息
         ElMessage.success('登录成功')
-        router.push('/dashboard')
+        
+        // ⭐ 延迟一下确保存储完成
+        setTimeout(() => {
+          console.log('=== 准备跳转 ===')
+          router.push('/dashboard')
+        }, 100)
+        
       } catch (error) {
-        console.error(error)
+        console.error('=== 登录失败 ===')
+        console.error('error:', error)
+        ElMessage.error(error.message || '登录失败')
       } finally {
         loading.value = false
       }

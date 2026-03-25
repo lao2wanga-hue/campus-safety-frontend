@@ -52,29 +52,30 @@ const routes = [
   }
 ]
 
-const router = createRouter({
-  history: createWebHashHistory(),
-  routes
-})
-
 router.beforeEach((to, from, next) => {
   document.title = `${to.meta.title || '首页'} - 校园安全隐患管理系统`
-  const token = localStorage.getItem('token')
-  const roles = to.meta.roles
   
+  const token = localStorage.getItem('token')
+  
+  console.log('=== 路由守卫 ===')
+  console.log('目标路径:', to.path)
+  console.log('token:', token)
+  
+  // 如果没有 token 且不是登录页，跳转到登录
   if (to.path !== '/login' && !token) {
+    console.log('无 token，跳转到登录')
     next('/login')
     return
   }
   
-  if (roles && token) {
-    const userRole = localStorage.getItem('role')
-    if (!roles.includes(userRole)) {
-      next('/dashboard')
-      return
-    }
+  // 如果有 token 且在登录页，跳转到首页
+  if (to.path === '/login' && token) {
+    console.log('已有 token，跳转到首页')
+    next('/dashboard')
+    return
   }
   
+  console.log('允许访问')
   next()
 })
 
