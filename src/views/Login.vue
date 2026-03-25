@@ -5,6 +5,7 @@
         <el-icon :size="40" color="#409EFF"><Lock /></el-icon>
         <h2>校园安全隐患管理系统</h2>
       </div>
+      
       <el-form
         ref="loginFormRef"
         :model="loginForm"
@@ -18,6 +19,7 @@
             placeholder="请输入用户名"
           />
         </el-form-item>
+        
         <el-form-item label="密码" prop="password">
           <el-input
             v-model="loginForm.password"
@@ -27,6 +29,7 @@
             @keyup.enter="handleLogin"
           />
         </el-form-item>
+        
         <el-form-item>
           <el-button
             type="primary"
@@ -38,6 +41,12 @@
           </el-button>
         </el-form-item>
       </el-form>
+      
+      <!-- ⭐ 添加注册链接 -->
+      <div class="login-footer">
+        <span>还没有账号？</span>
+        <el-link type="primary" @click="goToRegister">立即注册</el-link>
+      </div>
       
       <div class="login-tips">
         <p>测试账号：admin / 123456</p>
@@ -76,37 +85,22 @@ const handleLogin = async () => {
     if (valid) {
       loading.value = true
       try {
-        console.log('=== Login.vue 开始登录 ===')
-        
         await userStore.login(loginForm)
-        
-        console.log('=== userStore.login 完成 ===')
-        console.log('localStorage token:', localStorage.getItem('token'))
-        console.log('localStorage role:', localStorage.getItem('role'))
-        
         ElMessage.success('登录成功')
-        
-        console.log('=== 准备跳转 ===')
-        console.log('目标路径：/dashboard')
-        
-        // 使用 setTimeout 确保 store 更新完成
-        setTimeout(() => {
-          console.log('=== 执行 router.push ===')
-          console.log('当前路由:', router.currentRoute.value.path)
-          router.push('/dashboard')
-          console.log('router.push 已调用')
-        }, 200)
-        
+        router.push('/dashboard')
       } catch (error) {
-        console.error('=== 登录失败 ===')
-        console.error('error:', error)
-        console.error('error.message:', error.message)
+        console.error('登录失败:', error)
         ElMessage.error(error.message || '登录失败')
       } finally {
         loading.value = false
       }
     }
   })
+}
+
+// ⭐ 跳转到注册页面
+const goToRegister = () => {
+  router.push('/register')
 }
 </script>
 
@@ -136,6 +130,19 @@ const handleLogin = async () => {
 
 .login-form {
   margin-top: 20px;
+}
+
+/* ⭐ 注册链接样式 */
+.login-footer {
+  text-align: center;
+  margin-top: 15px;
+  color: #606266;
+  font-size: 14px;
+}
+
+.login-footer .el-link {
+  margin-left: 5px;
+  cursor: pointer;
 }
 
 .login-tips {
