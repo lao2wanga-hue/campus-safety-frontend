@@ -44,6 +44,17 @@ export function updateHazard(id, data) {
 }
 
 /**
+ * ⭐ 更新隐患等级（新增）
+ */
+export function updateHazardLevel(id, level) {
+  return request({
+    url: `/hazard/${id}/level`,
+    method: 'put',
+    data: { level }
+  })
+}
+
+/**
  * 分配隐患
  */
 export function assignHazard(id, handlerId) {
@@ -76,7 +87,7 @@ export function closeHazard(id) {
 }
 
 /**
- * ⭐ 完成修理
+ * 完成修理
  */
 export function completeRepairApi(id) {
   return request({
@@ -86,7 +97,7 @@ export function completeRepairApi(id) {
 }
 
 /**
- * ⭐ 删除隐患
+ * 删除隐患
  */
 export function deleteHazardApi(id) {
   return request({
@@ -96,7 +107,7 @@ export function deleteHazardApi(id) {
 }
 
 /**
- * ⭐ 获取维修员列表（确保有这个函数）
+ * 获取维修员列表
  */
 export function getRectifiers() {
   return request({

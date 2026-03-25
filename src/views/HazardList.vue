@@ -54,12 +54,19 @@
           </template>
         </el-table-column>
         <el-table-column prop="createdAt" label="上报时间" width="180" />
-        <el-table-column label="操作" width="300" fixed="right">
+        <el-table-column label="操作" width="350" fixed="right">
           <template #default="{ row }">
             <el-button size="small" @click="viewDetail(row)">详情</el-button>
             
-            <!-- 管理员：可以分配、删除 -->
+            <!-- ⭐ 管理员：可以调整等级、分配、删除 -->
             <template v-if="userStore.role === 'ADMIN'">
+              <el-button 
+                size="small" 
+                type="warning"
+                @click="handleChangeLevel(row)"
+              >
+                调整等级
+              </el-button>
               <el-button 
                 v-if="row.status === 'PENDING'" 
                 size="small" 
@@ -118,6 +125,26 @@
       </template>
     </el-dialog>
     
+    <!-- ⭐ 调整等级对话框 -->
+    <el-dialog v-model="changeLevelDialogVisible" title="调整隐患等级" width="400px">
+      <el-form :model="changeLevelForm" label-width="80px">
+        <el-form-item label="当前等级">
+          <el-tag :type="getLevelType(currentHazard?.level)">{{ getLevelText(currentHazard?.level) }}</el-tag>
+        </el-form-item>
+        <el-form-item label="新等级" required>
+          <el-select v-model="changeLevelForm.level" placeholder="请选择新等级" style="width: 100%">
+            <el-option label="低" value="LOW" />
+            <el-option label="中" value="MEDIUM" />
+            <el-option label="高" value="HIGH" />
+          </el-select>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="changeLevelDialogVisible = false">取消</el-button>
+        <el-button type="warning" @click="submitChangeLevel" :loading="changing">确认调整</el-button>
+      </template>
+    </el-dialog>
+    
     <!-- 分配隐患对话框 -->
     <el-dialog v-model="showAssignDialog" title="分配隐患" width="500px">
       <el-form :model="assignForm" label-width="100px">
@@ -163,16 +190,17 @@ import { ref, reactive, onMounted } from 'vue'
 import { Plus } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useUserStore } from '@/store/modules/user'
-// ⭐ 确保导入 getRectifiers
-import { getHazardList, createHazard, assignHazard, completeRepairApi, deleteHazardApi, getRectifiers } from '@/api/hazard'
+import { getHazardList, createHazard, assignHazard, completeRepairApi, deleteHazardApi, getRectifiers, updateHazardLevel } from '@/api/hazard'
 
 const userStore = useUserStore()
 const loading = ref(false)
 const creating = ref(false)
 const assigning = ref(false)
+const changing = ref(false)
 const showCreateDialog = ref(false)
 const showAssignDialog = ref(false)
 const showDetailDialog = ref(false)
+const changeLevelDialogVisible = ref(false)  // ⭐ 改名避免冲突
 const createFormRef = ref(null)
 const hazardList = ref([])
 const rectifierList = ref([])
@@ -192,6 +220,10 @@ const createForm = reactive({
 
 const assignForm = reactive({
   handlerId: null
+})
+
+const changeLevelForm = reactive({
+  level: ''
 })
 
 const rules = {
@@ -234,15 +266,14 @@ const loadList = async () => {
   }
 }
 
-// ⭐ 修复：使用正确的 getRectifiers API
+// 加载维修员列表
 const loadRectifiers = async () => {
   try {
-    const res = await getRectifiers()  // ⭐ 使用 getRectifiers 而不是 getHazardList
+    const res = await getRectifiers()
     rectifierList.value = res.data || []
-    console.log('维修员列表:', rectifierList.value)  // ⭐ 添加日志方便调试
+    console.log('维修员列表:', rectifierList.value)
   } catch (error) {
     console.error('加载维修员失败:', error)
-    ElMessage.error('加载维修员列表失败')
   }
 }
 
@@ -260,6 +291,37 @@ const submitCreate = async () => {
     ElMessage.error(error.message || '上报失败')
   } finally {
     creating.value = false
+  }
+}
+
+// ⭐ 显示调整等级对话框
+const handleChangeLevel = (row) => {
+  currentHazard.value = row
+  changeLevelForm.level = row.level
+  changeLevelDialogVisible.value = true
+}
+
+// ⭐ 提交调整等级
+const submitChangeLevel = async () => {
+  if (!changeLevelForm.level) {
+    ElMessage.warning('请选择新等级')
+    return
+  }
+  if (changeLevelForm.level === currentHazard.value.level) {
+    ElMessage.warning('等级未变化')
+    changeLevelDialogVisible.value = false
+    return
+  }
+  changing.value = true
+  try {
+    await updateHazardLevel(currentHazard.value.id, changeLevelForm.level)
+    ElMessage.success('等级调整成功')
+    changeLevelDialogVisible.value = false
+    loadList()
+  } catch (error) {
+    ElMessage.error(error.message || '调整失败')
+  } finally {
+    changing.value = false
   }
 }
 
@@ -325,7 +387,6 @@ const deleteHazard = async (id) => {
 
 onMounted(() => {
   loadList()
-  // ⭐ 管理员和维修员需要加载维修员列表
   if (userStore.role === 'ADMIN' || userStore.role === 'RECTIFIER') {
     loadRectifiers()
   }
