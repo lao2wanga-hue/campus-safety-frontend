@@ -58,19 +58,26 @@ const router = createRouter({
 })
 
 router.beforeEach((to, from, next) => {
-  document.title = `${to.meta.title || '首页'} - 校园安全隐患管理系统`
+  console.log('=== 路由守卫 ===')
+  console.log('从:', from.path)
+  console.log('到:', to.path)
+  console.log('token:', localStorage.getItem('token'))
+  
   const token = localStorage.getItem('token')
   
   if (to.path !== '/login' && !token) {
+    console.log('无 token，跳转到登录')
     next('/login')
     return
   }
   
   if (to.path === '/login' && token) {
+    console.log('已有 token，跳转到首页')
     next('/dashboard')
     return
   }
   
+  console.log('允许访问')
   next()
 })
 

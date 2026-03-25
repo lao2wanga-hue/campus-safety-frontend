@@ -76,11 +76,31 @@ const handleLogin = async () => {
     if (valid) {
       loading.value = true
       try {
+        console.log('=== Login.vue 开始登录 ===')
+        
         await userStore.login(loginForm)
+        
+        console.log('=== userStore.login 完成 ===')
+        console.log('localStorage token:', localStorage.getItem('token'))
+        console.log('localStorage role:', localStorage.getItem('role'))
+        
         ElMessage.success('登录成功')
-        router.push('/dashboard')
+        
+        console.log('=== 准备跳转 ===')
+        console.log('目标路径：/dashboard')
+        
+        // 使用 setTimeout 确保 store 更新完成
+        setTimeout(() => {
+          console.log('=== 执行 router.push ===')
+          console.log('当前路由:', router.currentRoute.value.path)
+          router.push('/dashboard')
+          console.log('router.push 已调用')
+        }, 200)
+        
       } catch (error) {
-        console.error('登录失败:', error)
+        console.error('=== 登录失败 ===')
+        console.error('error:', error)
+        console.error('error.message:', error.message)
         ElMessage.error(error.message || '登录失败')
       } finally {
         loading.value = false
