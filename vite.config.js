@@ -15,12 +15,12 @@ export default defineConfig({
     assetsDir: 'static',
     sourcemap: false,
     minify: 'esbuild',
-    // ⭐ 强制更改文件名（添加时间戳）
+    // 强制生成新 hash
     rollupOptions: {
       output: {
-        entryFileNames: `static/[name]-[hash]-v4.js`,
-        chunkFileNames: `static/[name]-[hash]-v4.js`,
-        assetFileNames: `static/[name]-[hash]-v4.[ext]`
+        entryFileNames: 'static/[name]-[hash]-v5.js',
+        chunkFileNames: 'static/[name]-[hash]-v5.js',
+        assetFileNames: 'static/[name]-[hash]-v5.[ext]'
       }
     },
     chunkSizeWarningLimit: 2000
@@ -30,7 +30,7 @@ export default defineConfig({
     open: true,
     proxy: {
       '/api': {
-        target: 'https://localhost:8080',
+        target: 'http://localhost:8080',
         changeOrigin: true
       }
     }

@@ -3,7 +3,7 @@
     <el-card class="login-card">
       <div class="login-header">
         <el-icon :size="40" color="#409EFF"><Lock /></el-icon>
-        <h2>校园安全隐患管理系统 V2</h2>
+        <h2>校园安全隐患管理系统</h2>
       </div>
       <el-form
         ref="loginFormRef"
@@ -16,7 +16,6 @@
           <el-input
             v-model="loginForm.username"
             placeholder="请输入用户名"
-            prefix-icon="User"
           />
         </el-form-item>
         <el-form-item label="密码" prop="password">
@@ -24,7 +23,6 @@
             v-model="loginForm.password"
             type="password"
             placeholder="请输入密码"
-            prefix-icon="Lock"
             show-password
             @keyup.enter="handleLogin"
           />
@@ -54,13 +52,12 @@ import { reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/store/modules/user'
 import { ElMessage } from 'element-plus'
-import { User, Lock } from '@element-plus/icons-vue'
+import { Lock } from '@element-plus/icons-vue'
 
 const router = useRouter()
 const userStore = useUserStore()
 const loginFormRef = ref(null)
 const loading = ref(false)
-const version = 'v2-force-rebuild'  // 强制重新编译
 
 const loginForm = reactive({
   username: '',
@@ -81,9 +78,7 @@ const handleLogin = async () => {
       try {
         await userStore.login(loginForm)
         ElMessage.success('登录成功')
-        setTimeout(() => {
-          router.push('/dashboard')
-        }, 100)
+        router.push('/dashboard')
       } catch (error) {
         console.error('登录失败:', error)
         ElMessage.error(error.message || '登录失败')
@@ -134,5 +129,3 @@ const handleLogin = async () => {
   margin: 5px 0;
 }
 </style>
-
-<!-- 强制重新编译 v2 -->
