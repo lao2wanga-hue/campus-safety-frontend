@@ -1,6 +1,5 @@
 <template>
   <el-container class="layout-container">
-    <!-- 侧边栏 -->
     <el-aside width="200px" class="sidebar">
       <div class="logo">
         <el-icon :size="24"><Lock /></el-icon>
@@ -32,9 +31,7 @@
       </el-menu>
     </el-aside>
     
-    <!-- 主内容区 -->
     <el-container>
-      <!-- 顶部导航 -->
       <el-header class="header">
         <div class="header-left">
           <span>校园安全隐患管理系统</span>
@@ -52,7 +49,6 @@
         </div>
       </el-header>
       
-      <!-- 内容区 -->
       <el-main class="main-content">
         <router-view />
       </el-main>
@@ -62,9 +58,9 @@
 
 <script setup>
 import { computed } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { useRoute } from 'vue-router'
 import { useUserStore } from '@/store/modules/user'
-import { ElMessageBox, localeContextKey } from 'element-plus'
+import { ElMessageBox } from 'element-plus'
 import { 
   Lock, 
   DataAnalysis, 
@@ -75,7 +71,6 @@ import {
 } from '@element-plus/icons-vue'
 
 const route = useRoute()
-const router = useRouter()
 const userStore = useUserStore()
 
 const activeMenu = computed(() => route.path)
@@ -84,7 +79,7 @@ const handleCommand = async (command) => {
   if (command === 'logout') {
     await ElMessageBox.confirm('确定退出登录？', '提示', { type: 'warning' })
     userStore.logout()
-    router.push('/login')
+    window.location.href = '/campus-safety-frontend/#/login'
   }
 }
 </script>
