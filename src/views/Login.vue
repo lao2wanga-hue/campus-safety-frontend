@@ -50,14 +50,12 @@
 </template>
 
 <script setup>
-// ⭐ 必须导入这些
 import { reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/store/modules/user'
 import { ElMessage } from 'element-plus'
 import { User, Lock } from '@element-plus/icons-vue'
 
-// ⭐ 必须初始化 router
 const router = useRouter()
 const userStore = useUserStore()
 const loginFormRef = ref(null)
@@ -80,27 +78,13 @@ const handleLogin = async () => {
     if (valid) {
       loading.value = true
       try {
-        console.log('=== 开始登录 ===')
-        
-        // 调用登录
         await userStore.login(loginForm)
-        
-        console.log('=== 登录成功 ===')
-        console.log('token:', localStorage.getItem('token'))
-        console.log('role:', localStorage.getItem('role'))
-        
-        // 显示成功消息
         ElMessage.success('登录成功')
-        
-        // 延迟一下确保存储完成
         setTimeout(() => {
-          console.log('=== 准备跳转 ===')
           router.push('/dashboard')
         }, 100)
-        
       } catch (error) {
-        console.error('=== 登录失败 ===')
-        console.error('error:', error)
+        console.error('登录失败:', error)
         ElMessage.error(error.message || '登录失败')
       } finally {
         loading.value = false
