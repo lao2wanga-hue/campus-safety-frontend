@@ -44,13 +44,18 @@ export function updateHazard(id, data) {
 }
 
 /**
- * ⭐ 更新隐患等级（新增）
+ * ⭐ 上传图片（新增）
  */
-export function updateHazardLevel(id, level) {
+export function uploadImage(file) {
+  const formData = new FormData()
+  formData.append('file', file)
   return request({
-    url: `/hazard/${id}/level`,
-    method: 'put',
-    data: { level }
+    url: '/hazard/upload',
+    method: 'post',
+    data: formData,
+    headers: {
+      'Content-Type': 'multipart/form-data'
+    }
   })
 }
 
@@ -153,5 +158,16 @@ export function getMyTasks() {
   return request({
     url: '/hazard/my-tasks',
     method: 'get'
+  })
+}
+
+/**
+ * ⭐ 更新隐患等级（新增）
+ */
+export function updateHazardLevel(id, level) {
+  return request({
+    url: `/hazard/${id}/level`,
+    method: 'put',
+    data: { level }
   })
 }

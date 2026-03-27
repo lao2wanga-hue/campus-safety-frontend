@@ -36,6 +36,7 @@
       <el-table :data="hazardList" style="width: 100%" v-loading="loading">
         <el-table-column prop="id" label="ID" width="80" />
         <el-table-column prop="title" label="标题" />
+        <el-table-column prop="area" label="区域" width="100" />
         <el-table-column prop="location" label="位置" width="150" />
         <el-table-column prop="level" label="等级" width="100">
           <template #default="{ row }">
@@ -58,7 +59,7 @@
           <template #default="{ row }">
             <el-button size="small" @click="viewDetail(row)">详情</el-button>
             
-            <!-- ⭐ 管理员：可以调整等级、分配、删除 -->
+            <!-- 管理员：可以调整等级、分配、删除 -->
             <template v-if="userStore.role === 'ADMIN'">
               <el-button 
                 size="small" 
@@ -125,7 +126,7 @@
       </template>
     </el-dialog>
     
-    <!-- ⭐ 调整等级对话框 -->
+    <!-- 调整等级对话框 -->
     <el-dialog v-model="changeLevelDialogVisible" title="调整隐患等级" width="400px">
       <el-form :model="changeLevelForm" label-width="80px">
         <el-form-item label="当前等级">
@@ -166,27 +167,43 @@
     </el-dialog>
     
     <!-- 隐患详情对话框 -->
-    <el-dialog v-model="showDetailDialog" title="隐患详情" width="600px">
+    <el-dialog v-model="showDetailDialog" title="隐患详情" width="700px">
       <el-descriptions :column="2" border v-if="currentHazard">
         <el-descriptions-item label="标题">{{ currentHazard.title }}</el-descriptions-item>
         <el-descriptions-item label="等级">
           <el-tag :type="getLevelType(currentHazard.level)">{{ getLevelText(currentHazard.level) }}</el-tag>
         </el-descriptions-item>
+        <el-descriptions-item label="区域">{{ currentHazard.area || '-' }}</el-descriptions-item>
         <el-descriptions-item label="位置">{{ currentHazard.location }}</el-descriptions-item>
         <el-descriptions-item label="状态">
           <el-tag :type="getStatusType(currentHazard.status)">{{ getStatusText(currentHazard.status) }}</el-tag>
         </el-descriptions-item>
-        <el-descriptions-item label="描述" :span="2">{{ currentHazard.description }}</el-descriptions-item>
         <el-descriptions-item label="上报人">{{ currentHazard.reporterName }}</el-descriptions-item>
         <el-descriptions-item label="上报时间">{{ currentHazard.createdAt }}</el-descriptions-item>
         <el-descriptions-item label="维修员">{{ currentHazard.handlerName || '未分配' }}</el-descriptions-item>
+        <el-descriptions-item label="描述" :span="2">{{ currentHazard.description }}</el-descriptions-item>
+        
+        <!-- 图片展示 -->
+        <el-descriptions-item label="隐患图片" :span="2">
+          <div v-if="imageList.length > 0" class="image-gallery">
+            <el-image
+              v-for="(img, index) in imageList"
+              :key="index"
+              :src="img"
+              :preview-src-list="imageList"
+              fit="cover"
+              class="image-item"
+            />
+          </div>
+          <el-empty v-else description="无图片" :image-size="80" />
+        </el-descriptions-item>
       </el-descriptions>
     </el-dialog>
   </div>
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, computed } from 'vue'
 import { Plus } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useUserStore } from '@/store/modules/user'
@@ -200,7 +217,7 @@ const changing = ref(false)
 const showCreateDialog = ref(false)
 const showAssignDialog = ref(false)
 const showDetailDialog = ref(false)
-const changeLevelDialogVisible = ref(false)  // ⭐ 改名避免冲突
+const changeLevelDialogVisible = ref(false)
 const createFormRef = ref(null)
 const hazardList = ref([])
 const rectifierList = ref([])
@@ -232,6 +249,18 @@ const rules = {
   location: [{ required: true, message: '请输入位置', trigger: 'blur' }],
   level: [{ required: true, message: '请选择等级', trigger: 'change' }]
 }
+
+// 解析图片列表
+const imageList = computed(() => {
+  if (!currentHazard.value?.images) return []
+  try {
+    return typeof currentHazard.value.images === 'string' 
+      ? JSON.parse(currentHazard.value.images) 
+      : currentHazard.value.images
+  } catch {
+    return []
+  }
+})
 
 const getLevelType = (level) => {
   const map = { LOW: 'info', MEDIUM: 'warning', HIGH: 'danger' }
@@ -294,14 +323,14 @@ const submitCreate = async () => {
   }
 }
 
-// ⭐ 显示调整等级对话框
+// 显示调整等级对话框
 const handleChangeLevel = (row) => {
   currentHazard.value = row
   changeLevelForm.level = row.level
   changeLevelDialogVisible.value = true
 }
 
-// ⭐ 提交调整等级
+// 提交调整等级
 const submitChangeLevel = async () => {
   if (!changeLevelForm.level) {
     ElMessage.warning('请选择新等级')
@@ -406,5 +435,19 @@ onMounted(() => {
 
 .filter-form {
   margin-bottom: 20px;
+}
+
+/* 图片展示样式 */
+.image-gallery {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.image-item {
+  width: 150px;
+  height: 150px;
+  border-radius: 4px;
+  cursor: pointer;
 }
 </style>
