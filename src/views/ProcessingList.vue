@@ -10,25 +10,24 @@
       <el-table :data="hazardList" style="width: 100%" v-loading="loading">
         <el-table-column prop="id" label="ID" width="80" />
         <el-table-column prop="title" label="标题" />
+        <el-table-column prop="area" label="区域" width="100" />
         <el-table-column prop="location" label="位置" width="150" />
         <el-table-column prop="level" label="等级" width="100">
           <template #default="{ row }">
             <el-tag :type="getLevelType(row.level)">{{ getLevelText(row.level) }}</el-tag>
           </template>
         </el-table-column>
-        <!-- ⭐ 修改：rectifierName → handlerName -->
         <el-table-column prop="handlerName" label="维修员" width="120">
           <template #default="{ row }">
             {{ row.handlerName || '未分配' }}
           </template>
         </el-table-column>
-        <!-- ⭐ 修改：assignTime → updatedAt -->
         <el-table-column prop="updatedAt" label="分配时间" width="180">
           <template #default="{ row }">
             {{ row.updatedAt || '-' }}
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="150" fixed="right">
+        <el-table-column label="操作" width="200" fixed="right">
           <template #default="{ row }">
             <!-- 维修员：可以完成修理 -->
             <template v-if="userStore.role === 'RECTIFIER' && row.handlerId === userStore.userId">
@@ -50,8 +49,7 @@
 import { ref, onMounted } from 'vue'
 import { useUserStore } from '@/store/modules/user'
 import { ElMessage, ElMessageBox } from 'element-plus'
-// ⭐ 修改：使用 hazard.js 中的 API
-import { getProcessingHazards, completeRepairApi } from '@/api/hazard'
+import { getMyTasks, completeRepairApi } from '@/api/hazard'
 
 const userStore = useUserStore()
 const loading = ref(false)
@@ -67,13 +65,14 @@ const getLevelText = (level) => {
   return map[level] || level
 }
 
-// ⭐ 修改：使用 getProcessingHazards API
+// 加载我的任务（维修员名下的隐患）
 const loadList = async () => {
   loading.value = true
   try {
-    const res = await getProcessingHazards()
-    hazardList.value = res.data || []
-    console.log('处理中隐患列表:', hazardList.value)
+    const res = await getMyTasks()
+    // 只显示处理中的隐患
+    hazardList.value = (res.data || []).filter(h => h.status === 'PROCESSING')
+    console.log('我的任务列表:', hazardList.value)
   } catch (error) {
     ElMessage.error('加载失败')
   } finally {
@@ -81,12 +80,12 @@ const loadList = async () => {
   }
 }
 
-// ⭐ 修改：使用 completeRepairApi
+// 完成修理
 const completeRepair = async (row) => {
   try {
     await ElMessageBox.confirm('确定完成修理？', '提示', { type: 'warning' })
     await completeRepairApi(row.id)
-    ElMessage.success('修理完成')
+    ElMessage.success('修理完成，隐患状态已更新为已解决')
     loadList()
   } catch (error) {
     if (error !== 'cancel') {

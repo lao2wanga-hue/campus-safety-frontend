@@ -4,10 +4,11 @@
       <template #header>
         <div class="card-header">
           <span>上报隐患</span>
+          <el-button @click="$router.back()">返回</el-button>
         </div>
       </template>
       
-      <el-form :model="form" :rules="rules" ref="formRef" label-width="100px">
+      <el-form :model="form" :rules="rules" ref="formRef" label-width="120px">
         <el-form-item label="标题" prop="title">
           <el-input v-model="form.title" placeholder="请输入隐患标题" />
         </el-form-item>
@@ -21,7 +22,7 @@
           />
         </el-form-item>
         
-        <!-- ⭐ 区域选择（新增） -->
+        <!-- 区域选择 -->
         <el-form-item label="区域" prop="area">
           <el-select v-model="form.area" placeholder="请选择区域" style="width: 100%">
             <el-option label="教学楼" value="教学楼" />
@@ -47,7 +48,7 @@
           </el-select>
         </el-form-item>
         
-        <!-- ⭐ 图片上传（新增） -->
+        <!-- 图片上传 -->
         <el-form-item label="隐患图片">
           <el-upload
             action="#"

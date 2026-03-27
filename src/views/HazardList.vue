@@ -4,7 +4,8 @@
       <template #header>
         <div class="card-header">
           <span>隐患列表</span>
-          <el-button type="primary" :icon="Plus" @click="showCreateDialog = true">
+          <!-- ⭐ 修改为跳转按钮 -->
+          <el-button type="primary" @click="$router.push('/hazard/report')">
             上报隐患
           </el-button>
         </div>
@@ -95,37 +96,8 @@
       </el-table>
     </el-card>
 
-    <!-- 创建隐患对话框 -->
-    <el-dialog v-model="showCreateDialog" title="上报隐患" width="600px">
-      <el-form :model="createForm" :rules="rules" ref="createFormRef" label-width="100px">
-        <el-form-item label="标题" prop="title">
-          <el-input v-model="createForm.title" placeholder="请输入隐患标题" />
-        </el-form-item>
-        <el-form-item label="描述" prop="description">
-          <el-input 
-            v-model="createForm.description" 
-            type="textarea" 
-            :rows="4"
-            placeholder="请详细描述隐患情况" 
-          />
-        </el-form-item>
-        <el-form-item label="位置" prop="location">
-          <el-input v-model="createForm.location" placeholder="请输入隐患位置" />
-        </el-form-item>
-        <el-form-item label="等级" prop="level">
-          <el-select v-model="createForm.level" placeholder="请选择等级">
-            <el-option label="低" value="LOW" />
-            <el-option label="中" value="MEDIUM" />
-            <el-option label="高" value="HIGH" />
-          </el-select>
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <el-button @click="showCreateDialog = false">取消</el-button>
-        <el-button type="primary" @click="submitCreate" :loading="creating">提交</el-button>
-      </template>
-    </el-dialog>
-    
+    <!-- ⭐ 删除创建隐患对话框（改用独立页面） -->
+
     <!-- 调整等级对话框 -->
     <el-dialog v-model="changeLevelDialogVisible" title="调整隐患等级" width="400px">
       <el-form :model="changeLevelForm" label-width="80px">
@@ -204,21 +176,17 @@
 
 <script setup>
 import { ref, reactive, onMounted, computed } from 'vue'
-import { Plus } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useUserStore } from '@/store/modules/user'
-import { getHazardList, createHazard, assignHazard, completeRepairApi, deleteHazardApi, getRectifiers, updateHazardLevel } from '@/api/hazard'
+import { getHazardList, assignHazard, completeRepairApi, deleteHazardApi, getRectifiers, updateHazardLevel } from '@/api/hazard'
 
 const userStore = useUserStore()
 const loading = ref(false)
-const creating = ref(false)
 const assigning = ref(false)
 const changing = ref(false)
-const showCreateDialog = ref(false)
 const showAssignDialog = ref(false)
 const showDetailDialog = ref(false)
 const changeLevelDialogVisible = ref(false)
-const createFormRef = ref(null)
 const hazardList = ref([])
 const rectifierList = ref([])
 const currentHazard = ref(null)
@@ -228,13 +196,6 @@ const filterForm = reactive({
   level: ''
 })
 
-const createForm = reactive({
-  title: '',
-  description: '',
-  location: '',
-  level: 'MEDIUM'
-})
-
 const assignForm = reactive({
   handlerId: null
 })
@@ -242,13 +203,6 @@ const assignForm = reactive({
 const changeLevelForm = reactive({
   level: ''
 })
-
-const rules = {
-  title: [{ required: true, message: '请输入标题', trigger: 'blur' }],
-  description: [{ required: true, message: '请输入描述', trigger: 'blur' }],
-  location: [{ required: true, message: '请输入位置', trigger: 'blur' }],
-  level: [{ required: true, message: '请选择等级', trigger: 'change' }]
-}
 
 // 解析图片列表
 const imageList = computed(() => {
@@ -303,23 +257,6 @@ const loadRectifiers = async () => {
     console.log('维修员列表:', rectifierList.value)
   } catch (error) {
     console.error('加载维修员失败:', error)
-  }
-}
-
-// 提交创建
-const submitCreate = async () => {
-  await createFormRef.value.validate()
-  creating.value = true
-  try {
-    await createHazard(createForm)
-    ElMessage.success('上报成功')
-    showCreateDialog.value = false
-    loadList()
-    Object.assign(createForm, { title: '', description: '', location: '', level: 'MEDIUM' })
-  } catch (error) {
-    ElMessage.error(error.message || '上报失败')
-  } finally {
-    creating.value = false
   }
 }
 
@@ -437,7 +374,6 @@ onMounted(() => {
   margin-bottom: 20px;
 }
 
-/* 图片展示样式 */
 .image-gallery {
   display: flex;
   flex-wrap: wrap;

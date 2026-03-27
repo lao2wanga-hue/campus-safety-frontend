@@ -44,7 +44,7 @@ export function updateHazard(id, data) {
 }
 
 /**
- * ⭐ 上传图片（新增）
+ * 上传图片
  */
 export function uploadImage(file) {
   const formData = new FormData()
@@ -132,6 +132,16 @@ export function getProcessingHazards() {
 }
 
 /**
+ * 获取我的任务（维修员查看自己名下的隐患）
+ */
+export function getMyTasks() {
+  return request({
+    url: '/hazard/my-tasks',
+    method: 'get'
+  })
+}
+
+/**
  * 获取统计数据
  */
 export function getStatistics() {
@@ -152,17 +162,7 @@ export function getMyReports() {
 }
 
 /**
- * 获取我的任务
- */
-export function getMyTasks() {
-  return request({
-    url: '/hazard/my-tasks',
-    method: 'get'
-  })
-}
-
-/**
- * ⭐ 更新隐患等级（新增）
+ * 更新隐患等级
  */
 export function updateHazardLevel(id, level) {
   return request({
