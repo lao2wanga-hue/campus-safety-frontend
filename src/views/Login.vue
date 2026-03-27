@@ -5,6 +5,7 @@
         <el-icon :size="40" color="#409EFF"><Lock /></el-icon>
         <h2>校园安全隐患管理系统</h2>
       </div>
+      
       <el-form
         ref="loginFormRef"
         :model="loginForm"
@@ -16,8 +17,10 @@
           <el-input
             v-model="loginForm.username"
             placeholder="请输入用户名"
+            @keyup.enter="handleLogin"
           />
         </el-form-item>
+        
         <el-form-item label="密码" prop="password">
           <el-input
             v-model="loginForm.password"
@@ -27,6 +30,7 @@
             @keyup.enter="handleLogin"
           />
         </el-form-item>
+        
         <el-form-item>
           <el-button
             type="primary"
@@ -76,11 +80,36 @@ const handleLogin = async () => {
     if (valid) {
       loading.value = true
       try {
+        console.log('=== Login.vue 开始登录 ===')
+        console.log('用户名:', loginForm.username)
+        
+        // 调用登录接口
         await userStore.login(loginForm)
+        
+        console.log('=== userStore.login 完成 ===')
+        console.log('localStorage token:', localStorage.getItem('token'))
+        console.log('localStorage role:', localStorage.getItem('role'))
+        
+        // 验证 token 是否已存储
+        const token = localStorage.getItem('token')
+        if (!token) {
+          throw new Error('登录成功但未获取到 token')
+        }
+        
         ElMessage.success('登录成功')
-        router.push('/dashboard')
+        
+        console.log('=== 准备跳转 ===')
+        console.log('目标路径：/dashboard')
+        
+        // ⭐ 直接跳转，不使用 setTimeout
+        router.replace('/dashboard')
+        
+        console.log('=== 跳转完成 ===')
+        
       } catch (error) {
-        console.error('登录失败:', error)
+        console.error('=== 登录失败 ===')
+        console.error('error:', error)
+        console.error('error.message:', error.message)
         ElMessage.error(error.message || '登录失败')
       } finally {
         loading.value = false
