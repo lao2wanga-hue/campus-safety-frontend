@@ -184,6 +184,7 @@
 import { ref, reactive, onMounted, computed } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useUserStore } from '@/store/modules/user'
+// ⭐ 确保导入 cancelAssignHazard
 import { getHazardList, assignHazard, completeRepairApi, deleteHazardApi, getRectifiers, updateHazardLevel, cancelAssignHazard } from '@/api/hazard'
 
 const userStore = useUserStore()
@@ -333,7 +334,7 @@ const cancelAssign = async (row) => {
     })
     await cancelAssignHazard(row.id)
     ElMessage.success('取消分配成功')
-    loadList()
+    loadList()  // ⭐ 确保调用后刷新列表
   } catch (error) {
     if (error !== 'cancel') {
       ElMessage.error(error.message || '操作失败')

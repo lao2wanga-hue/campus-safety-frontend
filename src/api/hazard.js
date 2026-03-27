@@ -71,7 +71,7 @@ export function assignHazard(id, handlerId) {
 }
 
 /**
- * ⭐ 取消分配（新增）
+ * ⭐ 取消分配（确保有这个函数）
  */
 export function cancelAssignHazard(id) {
   return request({
