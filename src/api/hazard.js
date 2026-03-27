@@ -92,7 +92,7 @@ export function closeHazard(id) {
 }
 
 /**
- * 完成修理
+ * 完成修理（维修员将状态变为已解决）
  */
 export function completeRepairApi(id) {
   return request({
@@ -169,5 +169,15 @@ export function updateHazardLevel(id, level) {
     url: `/hazard/${id}/level`,
     method: 'put',
     data: { level }
+  })
+}
+
+/**
+ * 获取隐患日志
+ */
+export function getHazardLogs(hazardId) {
+  return request({
+    url: `/hazard/${hazardId}/logs`,
+    method: 'get'
   })
 }

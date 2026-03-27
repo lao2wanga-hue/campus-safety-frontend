@@ -4,7 +4,6 @@
       <template #header>
         <div class="card-header">
           <span>隐患列表</span>
-          <!-- ⭐ 修改为跳转按钮 -->
           <el-button type="primary" @click="$router.push('/hazard/report')">
             上报隐患
           </el-button>
@@ -80,7 +79,7 @@
               <el-button size="small" type="danger" @click="deleteHazard(row.id)">删除</el-button>
             </template>
             
-            <!-- 维修员：可以完成修理 -->
+            <!-- ⭐ 维修员：可以完成修理（状态变为已解决） -->
             <template v-else-if="userStore.role === 'RECTIFIER'">
               <el-button 
                 v-if="row.status === 'PROCESSING' && row.handlerId === userStore.userId" 
@@ -90,13 +89,19 @@
               >
                 完成修理
               </el-button>
+              <el-button 
+                v-else-if="row.status === 'PROCESSING'" 
+                size="small" 
+                type="info"
+                disabled
+              >
+                非本人负责
+              </el-button>
             </template>
           </template>
         </el-table-column>
       </el-table>
     </el-card>
-
-    <!-- ⭐ 删除创建隐患对话框（改用独立页面） -->
 
     <!-- 调整等级对话框 -->
     <el-dialog v-model="changeLevelDialogVisible" title="调整隐患等级" width="400px">
@@ -317,12 +322,16 @@ const submitAssign = async () => {
   }
 }
 
-// 完成修理
+// ⭐ 完成修理（状态变为已解决）
 const completeRepair = async (row) => {
   try {
-    await ElMessageBox.confirm('确定完成修理？', '提示', { type: 'warning' })
+    await ElMessageBox.confirm('确定完成修理？完成后隐患状态将变为"已解决"', '提示', { 
+      type: 'warning',
+      confirmButtonText: '确认完成',
+      cancelButtonText: '取消'
+    })
     await completeRepairApi(row.id)
-    ElMessage.success('修理完成')
+    ElMessage.success('修理完成，隐患状态已更新为"已解决"')
     loadList()
   } catch (error) {
     if (error !== 'cancel') {

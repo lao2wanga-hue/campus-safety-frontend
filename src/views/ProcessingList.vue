@@ -29,9 +29,11 @@
         </el-table-column>
         <el-table-column label="操作" width="200" fixed="right">
           <template #default="{ row }">
-            <!-- 维修员：可以完成修理 -->
+            <!-- ⭐ 维修员：可以完成修理（状态变为已解决） -->
             <template v-if="userStore.role === 'RECTIFIER' && row.handlerId === userStore.userId">
-              <el-button type="success" size="small" @click="completeRepair(row)">完成修理</el-button>
+              <el-button type="success" size="small" @click="completeRepair(row)">
+                完成修理
+              </el-button>
             </template>
             
             <!-- 管理员：可以查看 -->
@@ -80,12 +82,16 @@ const loadList = async () => {
   }
 }
 
-// 完成修理
+// ⭐ 完成修理（状态变为已解决）
 const completeRepair = async (row) => {
   try {
-    await ElMessageBox.confirm('确定完成修理？', '提示', { type: 'warning' })
+    await ElMessageBox.confirm('确定完成修理？完成后隐患状态将变为"已解决"', '提示', { 
+      type: 'warning',
+      confirmButtonText: '确认完成',
+      cancelButtonText: '取消'
+    })
     await completeRepairApi(row.id)
-    ElMessage.success('修理完成，隐患状态已更新为已解决')
+    ElMessage.success('修理完成，隐患状态已更新为"已解决"')
     loadList()
   } catch (error) {
     if (error !== 'cancel') {
